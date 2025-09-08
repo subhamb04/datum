@@ -8,7 +8,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     raise RuntimeError("Please set GOOGLE_API_KEY in your environment.")
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key)
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", google_api_key=api_key)
 
 def complete(prompt: str) -> str:
     return llm.invoke(prompt).content.strip()

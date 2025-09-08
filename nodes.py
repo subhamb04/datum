@@ -10,8 +10,9 @@ def sql_generator(state: AgentState) -> dict:
     marketing_spend(date, region, channel, spend)
     customers(customer_id, region, age, income)
     """
-    prompt = f"You are a helpful SQL expert. Schema: {schema}. Question: {state['question']}. Return only a SELECT SQL query."
+    prompt = f"You are a helpful SQL expert. Schema: {schema}. Question: {state['question']}. Return only a SELECT SQL query and do not wrap it with ```sql. tag"
     sql = complete(prompt)
+    print(sql)
     if not sql.lower().startswith("select"):
         sql = "SELECT region, SUM(revenue) as total_revenue FROM sales GROUP BY region"
     return {"sql": sql}   # ✅ Only returning updated key
