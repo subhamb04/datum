@@ -6,12 +6,12 @@ from langchain_core.tracers import LangChainTracer
 from langchain_core.tracers.langchain import wait_for_all_tracers
 from state import AgentState
 from nodes import sql_generator, sql_executor, chart_generator, narrator
+from io import BytesIO
+import base64
 
-# --- Tracer setup ---
 project = os.getenv("LANGCHAIN_PROJECT", "default-project")
 tracer = LangChainTracer(project_name=project)
 
-# --- Graph setup ---
 graph = StateGraph(AgentState)
 graph.add_node("sql_generator", sql_generator)
 graph.add_node("sql_executor", sql_executor)
@@ -25,11 +25,24 @@ graph.add_edge("sql_executor", "narrator")
 
 app = graph.compile()
 
-# --- Debug: ASCII graph ---
 ascii_graph = app.get_graph().draw_ascii()
 print(ascii_graph)
 
-# --- Agent invocation ---
+def df_to_html(df: pd.DataFrame):
+    """Convert dataframe to HTML table string"""
+    if df.empty:
+        return ""
+    return df.to_html(index=False)
+
+def pil_to_base64(img):
+    """Convert PIL Image to base64 string for embedding"""
+    if img is None:
+        return ""
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return f"<img src='data:image/png;base64,{img_str}' style='max-width:400px;'>"
+
 def run_agent(message, history):
     """
     message: str -> user's question
@@ -40,42 +53,38 @@ def run_agent(message, history):
         config={"callbacks": [tracer]}
     )
 
-    # Construct agent response as Markdown
-    response_md = ""
-    if "narrative" in result:
-        response_md += f"**Insights:**\n{result.get('narrative','')}\n\n"
-    if "sql" in result:
-        response_md += f"**SQL:**\n```sql\n{result.get('sql','')}\n```\n"
+    bot_message = ""
+    if "narrative" in result and result.get("narrative"):
+        bot_message += f"**Insights:**\n{result.get('narrative','')}\n\n"
 
-    # Prepare chart if exists
-    chart_img = result.get("chart_pil")
+    if "sql" in result and result.get("sql"):
+        bot_message += f"**SQL:**\n```sql\n{result.get('sql','')}\n```\n"
 
-    # Prepare dataframe if exists
-    df_result = result.get("df", pd.DataFrame())
+    chart_html = pil_to_base64(result.get("chart_pil"))
+    if chart_html:
+        bot_message += chart_html + "\n"
 
-    # Append to history: (user, bot)
+    df_html = df_to_html(result.get("df", pd.DataFrame()))
+    if df_html:
+        bot_message += df_html
+
     history = history or []
-    history.append((message, response_md))
+    history.append((message, bot_message))
 
-    # Return updated history, chart, and dataframe
-    return history, chart_img, df_result
+    return history
 
-# --- Gradio UI ---
 with gr.Blocks() as demo:
-    gr.Markdown("# Multi-turn Data Analysis Chatbot")
+    gr.Markdown("# Multi-turn Data Analysis Chatbot with Inline Charts & Tables")
     chatbot = gr.Chatbot()
     user_input = gr.Textbox(label="Ask a question")
     submit_btn = gr.Button("Send")
-    chart_out = gr.Image(label="Chart", type="pil")
-    df_out = gr.Dataframe(label="Query Result")
 
-    # Maintain conversation history
     state = gr.State([])
 
     submit_btn.click(
         run_agent,
         inputs=[user_input, state],
-        outputs=[chatbot, chart_out, df_out]
+        outputs=[chatbot]
     )
 
 if __name__ == "__main__":
