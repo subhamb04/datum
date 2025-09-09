@@ -5,6 +5,7 @@ A simple yet powerful data analysis agent that uses AI to generate SQL queries, 
 ## Features
 
 - **Natural Language Queries**: Ask questions about your data in plain English
+- **Auto Routing (Chat vs SQL)**: Agent decides between a quick chat reply or full SQL/database analysis
 - **AI-Generated SQL**: Automatically converts questions into SQL queries
 - **Data Visualization**: Generates charts and graphs from query results
 - **Intelligent Insights**: Provides narrative analysis and recommendations
@@ -16,17 +17,25 @@ A simple yet powerful data analysis agent that uses AI to generate SQL queries, 
 
 ```
 datum/
-├── app.py              # Main application with LangGraph workflow
-├── nodes.py            # Agent nodes (SQL generation, execution, charting, narration)
-├── state.py            # Typed state definition for the agent
-├── llm.py              # LLM configuration (Google Gemini)
-├── db.py               # Database setup and data loading
-├── charts.py           # Chart generation utilities
-├── data/               # Sample datasets
+├── app.py                  # Main application with LangGraph workflow
+├── builder/
+│   ├── graph_builder.py    # Graph with router + conditional edges
+│   ├── nodes.py            # Agent nodes (decider, chat, SQL, charting, narration)
+│   ├── state.py            # Typed state definition for the agent
+│   └── ui.py               # Gradio UI wiring
+├── clients/
+│   └── llm.py              # LLM configuration (Google Gemini)
+├── datastore/
+│   └── db.py               # DuckDB setup and data loading
+├── utils/
+│   ├── charts.py           # Chart generation utilities
+│   ├── insight_utils.py    # Insight helpers
+│   └── tracer_utils.py     # LangSmith tracing helpers
+├── data/                   # Sample datasets
 │   ├── sales.csv
 │   ├── marketing_spend.csv
 │   └── customers.csv
-└── requirements.txt    # Python dependencies
+└── requirements.txt        # Python dependencies
 ```
 
 ## Setup Instructions
@@ -79,11 +88,16 @@ datum/
    - Example: "Show me marketing spend by channel"
    - Example: "Which products have the highest unit sales?"
 
-2. **View results**: The agent will provide:
-   - **Query Result**: Data table with your results
-   - **Chart**: Visual representation of the data
-   - **Insights**: AI-generated analysis and recommendations
-   - **SQL**: The generated SQL query for transparency
+2. **Agent chooses the path automatically**
+   - **Chat route**: Direct conversational answer when no database analysis is needed
+   - **SQL route**: The agent generates SQL and provides:
+     - **Query Result** (table)
+     - **Chart** (visualization)
+     - **Insights** (narrative + recommendation)
+     - **SQL** (for transparency)
+
+### Routing at a Glance
+The `decider` node analyzes your question and sets a `route` of `chat` or `sql`. The graph then either calls `general_chat` or runs the SQL flow (`sql_generator` → `sql_executor` → `chart_generator` + `narrator`).
 
 ## Sample Data
 

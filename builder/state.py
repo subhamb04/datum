@@ -1,4 +1,4 @@
-from typing import TypedDict, Optional
+from typing import TypedDict, Literal
 import pandas as pd
 from PIL import Image
 
@@ -8,4 +8,5 @@ class AgentState(TypedDict, total=False):
     df: pd.DataFrame
     chart_pil: Image.Image
     narrative: str
-
+    route: Literal["sql", "chat"]
+    history: list[tuple[str, str]]
