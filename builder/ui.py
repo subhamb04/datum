@@ -6,7 +6,7 @@ def build_ui(app, tracer):
         gr.Markdown("# Datum : Autonomous Data Analysis Agent")
         chatbot = gr.Chatbot(type="messages")
         user_input = gr.Textbox(label="Ask a question", placeholder="Ex: Show me marketing spend by channel")
-        submit_btn = gr.Button("Send")
+        submit_btn = gr.Button("Send", variant='primary')
 
         state = gr.State([])
 
