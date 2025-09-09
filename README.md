@@ -1,3 +1,9 @@
+---
+title: datum
+app_file: app.py
+sdk: gradio
+sdk_version: 5.44.1
+---
 # Datum - AI-Powered Data Analysis Agent
 
 A simple yet powerful data analysis agent that uses AI to generate SQL queries, execute them against your data, and provide visualizations and insights through a web interface.

@@ -1,0 +1,6 @@
+date,region,channel,spend
+2024-01-01,North,Search,300
+2024-01-01,South,Social,200
+2024-01-02,North,Display,250
+2024-01-02,West,Search,150
+2024-01-03,East,Social,400
