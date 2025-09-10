@@ -37,7 +37,7 @@ datum/
 │   ├── charts.py           # Chart generation utilities
 │   ├── insight_utils.py    # Insight helpers
 │   └── tracer_utils.py     # LangSmith tracing helpers
-├── data/                   # Sample datasets
+├── sample_data/            # Sample datasets
 │   ├── sales.csv
 │   ├── marketing_spend.csv
 │   └── customers.csv
@@ -124,7 +124,7 @@ The project includes sample datasets:
 
 ## Customization
 
-- **Add your own data**: Replace CSV files in the `data/` directory and update the schema in `nodes.py`
+- **Add your own data**: Replace CSV files in the `sample_data/` directory and update the schema in `nodes.py`
 - **Modify the LLM**: Change the model or provider in `llm.py`
 - **Customize charts**: Modify chart generation logic in `charts.py`
 - **Extend the workflow**: Add new nodes to the LangGraph workflow in `app.py`
